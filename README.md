@@ -1,2 +1,3 @@
 # identity-user-ekyc
-wso2 extension for ekyc
+
+This repository contains modules related to the user ekyc feature
