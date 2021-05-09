@@ -29,17 +29,20 @@ public class EKYCConfigurationDTO {
     private String callbackUrl;
     private List<String> services;
     private Map<String,String> claimsMapping;
+    private boolean skipTlsCheck;
 
     public EKYCConfigurationDTO() {
     }
 
-    public EKYCConfigurationDTO(String url, String apiKey, String apiSecret, String callbackUrl, List<String> services, Map<String,String> claimsMapping) {
+    public EKYCConfigurationDTO(String url, String apiKey, String apiSecret, String callbackUrl, List<String> services,
+                                Map<String, String> claimsMapping, boolean skipTlsCheck) {
         this.url = url;
         this.apiKey = apiKey;
         this.apiSecret = apiSecret;
         this.callbackUrl = callbackUrl;
         this.services = services;
         this.claimsMapping = claimsMapping;
+        this.skipTlsCheck = skipTlsCheck;
     }
 
     public String getUrl() {
@@ -88,5 +91,13 @@ public class EKYCConfigurationDTO {
 
     public void setClaimsMapping(Map<String, String> claimsMapping) {
         this.claimsMapping = claimsMapping;
+    }
+
+    public boolean isSkipTlsCheck() {
+        return skipTlsCheck;
+    }
+
+    public void setSkipTlsCheck(boolean skipTlsCheck) {
+        this.skipTlsCheck = skipTlsCheck;
     }
 }

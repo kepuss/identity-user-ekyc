@@ -58,6 +58,9 @@ public class EKYCConfigurationMapper {
                 case CONFIG_CLAIMS_MAPPING:
                     ekycConfiguration.setClaimsMapping(new Gson().fromJson(attribute.getValue(),Map.class));
                     break;
+                case CONFIG_SKIP_TLS_CHECK:
+                    ekycConfiguration.setSkipTlsCheck(Boolean.valueOf(attribute.getValue()));
+                    break;
             }
         });
         return ekycConfiguration;
@@ -73,6 +76,7 @@ public class EKYCConfigurationMapper {
         ekycConfigurationAttributes.put(CONFIG_CALLBACK_URL, ekycConfiguration.getCallbackUrl());
         ekycConfigurationAttributes.put(CONFIG_SERVICES, String.join(",",ekycConfiguration.getServices()));
         ekycConfigurationAttributes.put(CONFIG_CLAIMS_MAPPING, new Gson().toJson(ekycConfiguration.getClaimsMapping()));
+        ekycConfigurationAttributes.put(CONFIG_SKIP_TLS_CHECK, Boolean.toString(ekycConfiguration.isSkipTlsCheck()));
 
         List<Attribute> resourceAttributes =
                 ekycConfigurationAttributes.entrySet().stream()

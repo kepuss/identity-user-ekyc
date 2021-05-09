@@ -27,6 +27,7 @@ public class IDVConstants {
     public static final String CONFIG_CALLBACK_URL = "callbackUrl";
     public static final String CONFIG_SERVICES = "services";
     public static final String CONFIG_CLAIMS_MAPPING = "claimsMapping";
+    public static final String CONFIG_SKIP_TLS_CHECK = "skipTlsCheck";
 
     public static final String IDV_RESPONSE_STATUS_OK = "ok";
     public static final String IDV_RESPONSE_STATUS_FIELD = "status";

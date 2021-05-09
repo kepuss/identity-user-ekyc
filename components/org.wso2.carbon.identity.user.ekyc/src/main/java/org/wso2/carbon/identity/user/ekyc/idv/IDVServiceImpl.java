@@ -54,7 +54,7 @@ import static org.wso2.carbon.identity.user.ekyc.util.EKYCConfigurationMapper.bu
 import static org.wso2.carbon.identity.user.ekyc.util.IDVConstants.EKYC_RESOURCE_TYPE;
 import static org.wso2.carbon.identity.user.ekyc.util.IDVConstants.RESOURCE_NAME;
 
-public class IDVServiceImpl implements IDVService{
+public class IDVServiceImpl implements IDVService {
 
     private HttpClient httpClient;
     private ConfigurationManager configurationManager;
@@ -64,66 +64,67 @@ public class IDVServiceImpl implements IDVService{
     public IDVServiceImpl(ConfigurationManager configurationManager) {
         this.configurationManager = configurationManager;
         try {
-            httpClient =  newClient();
+            httpClient = newClient();
         } catch (Exception e) {
-            log.error("IDV Http client creation error",e);
+            log.error("IDV Http client creation error", e);
         }
     }
 
     @Override
     public EKYCSessionDTO generateNewSession(String service, List<String> claims) throws IDVException, ConfigurationManagementException {
         try {
-            EKYCSesssionRequestDTO ekycSesssionRequest = new EKYCSesssionRequestDTO(service,claims, getEKYCConfiguration().getCallbackUrl());
-            HttpPost request = getJsonPostRequest(IDVConstants.UrlPaths.GET_SESSION_PATH,ekycSesssionRequest);
-            EKYCSessionDTO ekycSessionDTO = executeCall(request,EKYCSessionDTO.class);
+            EKYCSesssionRequestDTO ekycSesssionRequest = new EKYCSesssionRequestDTO(service, claims, getEKYCConfiguration()
+                    .getCallbackUrl());
+            HttpPost request = getJsonPostRequest(IDVConstants.UrlPaths.GET_SESSION_PATH, ekycSesssionRequest);
+            EKYCSessionDTO ekycSessionDTO = executeCall(request, EKYCSessionDTO.class);
             return ekycSessionDTO;
         } catch (IOException e) {
-            throw new IDVException(IDVConstants.ErrorMessages.IDV_CONNECTION_ERROR,e);
+            throw new IDVException(IDVConstants.ErrorMessages.IDV_CONNECTION_ERROR, e);
         }
     }
 
     @Override
     public JsonObject getSessionVc(String userId, String sessionId) throws IDVException, ConfigurationManagementException {
         try {
-            EKYCVCRequestDTO ekycvcRequestDTO = new EKYCVCRequestDTO(userId,sessionId);
-            HttpPost request = getJsonPostRequest(IDVConstants.UrlPaths.POST_VC_PATH,ekycvcRequestDTO);
+            EKYCVCRequestDTO ekycvcRequestDTO = new EKYCVCRequestDTO(userId, sessionId);
+            HttpPost request = getJsonPostRequest(IDVConstants.UrlPaths.POST_VC_PATH, ekycvcRequestDTO);
             HttpResponse response = httpClient.execute(request);
-            if(response.getStatusLine().getStatusCode() != 200){
+            if (response.getStatusLine().getStatusCode() != 200) {
                 throw new IDVException(IDVConstants.ErrorMessages.IDV_CONNECTION_RESPONSE_CODE_NOT_OK);
             }
             String responseBody = EntityUtils.toString(response.getEntity());
             JsonObject vc = new JsonParser().parse(responseBody).getAsJsonObject();
             return vc;
         } catch (IOException e) {
-            throw new IDVException(IDVConstants.ErrorMessages.IDV_CONNECTION_ERROR,e);
+            throw new IDVException(IDVConstants.ErrorMessages.IDV_CONNECTION_ERROR, e);
         }
     }
 
     @Override
     public EKYCVerifyClaimResponseDTO getVerifyClaim(String sessionId, String claim, String value) throws IDVException, ConfigurationManagementException {
         try {
-            EKYCVerifyClaimRequestDTO ekycVerifyClaimRequestDTO = new EKYCVerifyClaimRequestDTO(sessionId,claim,value);
-            HttpPost request = getJsonPostRequest(IDVConstants.UrlPaths.POST_CLAIM_VERIFY_PATH,ekycVerifyClaimRequestDTO);
-            EKYCVerifyClaimResponseDTO ekycVerifyClaimResponseDTO = executeCall(request,EKYCVerifyClaimResponseDTO.class);
+            EKYCVerifyClaimRequestDTO ekycVerifyClaimRequestDTO = new EKYCVerifyClaimRequestDTO(sessionId, claim, value);
+            HttpPost request = getJsonPostRequest(IDVConstants.UrlPaths.POST_CLAIM_VERIFY_PATH, ekycVerifyClaimRequestDTO);
+            EKYCVerifyClaimResponseDTO ekycVerifyClaimResponseDTO = executeCall(request, EKYCVerifyClaimResponseDTO.class);
             return ekycVerifyClaimResponseDTO;
         } catch (IOException e) {
-            throw new IDVException(IDVConstants.ErrorMessages.IDV_CONNECTION_ERROR,e);
+            throw new IDVException(IDVConstants.ErrorMessages.IDV_CONNECTION_ERROR, e);
         }
     }
 
     private <T> T executeCall(HttpPost request, Class<T> clazz) throws IOException, IDVException {
         HttpResponse response = httpClient.execute(request);
-        if(response.getStatusLine().getStatusCode() != 200){
+        if (response.getStatusLine().getStatusCode() != 200) {
             throw new IDVException(IDVConstants.ErrorMessages.IDV_CONNECTION_RESPONSE_CODE_NOT_OK);
         }
         String responseBody = EntityUtils.toString(response.getEntity());
-        T result = new Gson().fromJson(responseBody,clazz);
+        T result = new Gson().fromJson(responseBody, clazz);
         return result;
     }
 
     private HttpPost getJsonPostRequest(String path, Object body) throws UnsupportedEncodingException, ConfigurationManagementException {
-        HttpPost request = new HttpPost(getEKYCConfiguration().getUrl()+path);
-        request.setHeader("Content-type",ContentType.APPLICATION_JSON.toString());
+        HttpPost request = new HttpPost(getEKYCConfiguration().getUrl() + path);
+        request.setHeader("Content-type", ContentType.APPLICATION_JSON.toString());
         request.setEntity(new StringEntity(new Gson().toJson(body)));
         return request;
     }
@@ -135,18 +136,19 @@ public class IDVServiceImpl implements IDVService{
     }
 
 
-    private HttpClient newClient() throws KeyStoreException, NoSuchAlgorithmException, KeyManagementException {
-
-        CloseableHttpClient httpClient = HttpClients.custom().
-                setHostnameVerifier(new AllowAllHostnameVerifier()).
-                setSslcontext(new SSLContextBuilder().loadTrustMaterial(null, new TrustStrategy()
-                {
-                    public boolean isTrusted(X509Certificate[] arg0, String arg1) throws CertificateException
-                    {
-                        return true;
-                    }
-                }).build()).build();
-        return  httpClient;
+    private HttpClient newClient() throws KeyStoreException, NoSuchAlgorithmException, KeyManagementException, ConfigurationManagementException {
+        if (getEKYCConfiguration().isSkipTlsCheck()) {
+            CloseableHttpClient httpClient = HttpClients.custom().
+                    setHostnameVerifier(new AllowAllHostnameVerifier()).
+                    setSslcontext(new SSLContextBuilder().loadTrustMaterial(null, new TrustStrategy() {
+                        public boolean isTrusted(X509Certificate[] arg0, String arg1) throws CertificateException {
+                            return true;
+                        }
+                    }).build()).build();
+            return httpClient;
+        } else {
+            return HttpClients.createDefault();
+        }
     }
 }
 
